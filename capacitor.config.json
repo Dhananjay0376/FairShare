@@ -1,0 +1,12 @@
+{
+  "appId": "com.dhananjay.fairshare",
+  "appName": "FairShare",
+  "webDir": "www",
+  "plugins": {
+    "GoogleAuth": {
+      "scopes": ["profile", "email"],
+      "serverClientId": "523811896408-af8cdqkhghqrcraki0co95cspng0kqr0.apps.googleusercontent.com.apps.googleusercontent.com",
+      "forceCodeForRefreshToken": true
+    }
+  }
+}

@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">FairShare</string>
+    <string name="title_activity_main">FairShare</string>
+    <string name="package_name">com.dhananjay.fairshare</string>
+    <string name="custom_url_scheme">com.dhananjay.fairshare</string>
+    <string name="server_client_id">523811896408-af8cdqkhghqrcraki0co95cspng0kqr0.apps.googleusercontent.com</string>
+</resources>

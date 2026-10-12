@@ -1,0 +1,27 @@
+{
+  "name": "fairshare",
+  "version": "1.0.0",
+  "description": "A mobile-first PWA for splitting group expenses (a free Splitwise alternative). Plain HTML/CSS/JS — no build step. Backend: Supabase (Postgres + Auth + RLS).",
+  "main": "service-worker.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dhananjay0376/FairShare.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Dhananjay0376/FairShare/issues"
+  },
+  "homepage": "https://github.com/Dhananjay0376/FairShare#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/core": "^8.5.3",
+    "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.4"
+  }
+}

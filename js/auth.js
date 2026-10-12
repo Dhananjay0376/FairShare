@@ -91,12 +91,34 @@
   // ---- Profile -------------------------------------------------
   var SWATCHES = ['#6366f1', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6'];
 
+  function hasEmailIdentity(user) {
+    // Returns true if user has a local email+password identity set up
+    return user.identities && user.identities.some(function (id) { return id.provider === 'email'; });
+  }
+
   async function profileView(S) {
     var p = S.profile;
     var sw = SWATCHES.map(function (c) {
       return '<button class="swatch' + (p.avatar_color === c ? ' sel' : '') + '" data-c="' + c +
         '" style="background:' + c + '" aria-label="color"></button>';
     }).join('');
+
+    // session.user may lack identities; fetch fresh user to get full data
+    var freshUser = S.user;
+    try {
+      var gu = await DB.client.auth.getUser();
+      if (gu.data && gu.data.user) { freshUser = gu.data.user; S.user = freshUser; }
+    } catch (e) {}
+    var hasPass = hasEmailIdentity(freshUser);
+    var passSection = '<div class="card" id="pass-card">' +
+      '<h3 style="margin:0 0 12px">' + (hasPass ? '🔑 Change Password' : '🔐 Set a Password') + '</h3>' +
+      (hasPass ? '<label>Current password<input type="password" id="pf-curr-pass" autocomplete="current-password" placeholder="••••••••"></label>' : '') +
+      '<label>New password<input type="password" id="pf-new-pass" minlength="6" autocomplete="new-password" placeholder="Min 6 characters"></label>' +
+      '<label>Confirm password<input type="password" id="pf-confirm-pass" autocomplete="new-password" placeholder="Re-enter new password"></label>' +
+      '<p class="hint" id="pass-msg"></p>' +
+      '<button class="btn primary block" id="pass-btn">' + (hasPass ? 'Update Password' : 'Set Password') + '</button>' +
+      '</div>';
+
     return '<div class="page"><div class="appbar"><h2>Profile</h2></div>' +
       '<div class="card center">' + UI.avatar(p, 72) +
       '<h3 style="margin:8px 0 2px">' + UI.esc(p.display_name) + '</h3>' +
@@ -108,6 +130,7 @@
       '<label>Avatar color</label><div class="swatches">' + sw + '</div>' +
       '<button class="btn primary block" type="submit">Save profile</button>' +
       '</form>' +
+      passSection +
       '<button class="btn danger-outline block" id="logout-btn">Log out</button></div>';
   }
 
@@ -135,6 +158,34 @@
       UI.toast('Profile saved');
       location.hash = '#/';
     });
+
+    // Password section
+    var hasPass = hasEmailIdentity(S.user);
+    document.getElementById('pass-btn').addEventListener('click', async function () {
+      var newPass = document.getElementById('pf-new-pass').value;
+      var confirmPass = document.getElementById('pf-confirm-pass').value;
+      var msg = document.getElementById('pass-msg');
+
+      if (newPass.length < 6) { msg.textContent = 'Password must be at least 6 characters.'; return; }
+      if (newPass !== confirmPass) { msg.textContent = 'Passwords do not match.'; return; }
+
+      if (hasPass) {
+        // Re-authenticate first with current password
+        var currPass = document.getElementById('pf-curr-pass').value;
+        if (!currPass) { msg.textContent = 'Enter your current password.'; return; }
+        var reauth = await DB.client.auth.signInWithPassword({ email: S.user.email, password: currPass });
+        if (reauth.error) { msg.textContent = 'Current password is incorrect.'; return; }
+      }
+
+      msg.textContent = 'Updating…';
+      var r = await DB.client.auth.updateUser({ password: newPass });
+      if (r.error) { msg.textContent = r.error.message; return; }
+      msg.textContent = '';
+      UI.toast(hasPass ? 'Password updated!' : 'Password set! You can now log in with email & password.');
+      // Re-render profile so section updates to "Change Password"
+      setTimeout(function () { location.hash = '#/profile'; }, 1500);
+    });
+
     document.getElementById('logout-btn').addEventListener('click', async function () {
       await DB.client.auth.signOut();
       location.hash = '#/login';
