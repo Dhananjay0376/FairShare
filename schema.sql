@@ -148,6 +148,11 @@ create policy "profiles_update_own" on profiles
 create policy "groups_select_member" on groups
   for select using (is_group_member(id));
 
+-- Owner must be able to see their group even before being added as a member
+-- (needed so the members_insert_owner policy subquery can read the groups row)
+create policy "groups_select_owner" on groups
+  for select using (owner_id = auth.uid());
+
 create policy "groups_insert_owner" on groups
   for insert with check (auth.role() = 'authenticated' and owner_id = auth.uid());
 
